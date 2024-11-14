@@ -29,7 +29,7 @@ resource "yandex_compute_instance" "this" {
   name                      = "linux-vm"
   allow_stopping_for_update = true
   platform_id               = "standard-v3"
-  zone                      = "ru-central1-a"
+  zone                      = var.zone
 
   resources {
     cores  = "2"

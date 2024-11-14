@@ -1,11 +1,5 @@
-variable "name_prefix" {
-  description = "(Optional) - Name prefix for project."
-  type        = string
-  default     = "project"
-}
-
 variable "folder_id" {
-  description = "(Optional) - Yandex Cloud Folder ID where resources will be created."
+  description = "Yandex Cloud Folder ID where resources will be created."
   type        = string
 }
 
@@ -16,6 +10,6 @@ variable "zone" {
 }
 
 variable "image_id" {
-  description = "(Optional) - Boot disk image id. If not provided, it defaults to Ubuntu 22.04 LTS image id"
+  description = "Boot disk image id. If not provided, it defaults to Ubuntu 22.04 LTS image id"
   type        = string
 } 
