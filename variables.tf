@@ -13,3 +13,8 @@ variable "image_id" {
   description = "Boot disk image id. If not provided, it defaults to Ubuntu 22.04 LTS image id"
   type        = string
 } 
+
+variable "ssh_key" {
+  description = "Boot disk image id. If not provided, it defaults to Ubuntu 22.04 LTS image id"
+  type        = string
+}

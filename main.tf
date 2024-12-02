@@ -45,6 +45,12 @@ resource "yandex_compute_instance" "this" {
     nat             = true
     nat_ip_address  = yandex_vpc_address.addr.external_ipv4_address[0].address
   }
+
+  metadata = {
+    user-data = templatefile("cloud-init.yaml.tftpl", {
+      ssh_key = var.ssh_key
+    })
+  }
 }
 
 # Создание Yandex Managed Service for YDB
