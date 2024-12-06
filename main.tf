@@ -50,8 +50,10 @@ resource "yandex_compute_instance" "this" {
     user-data = templatefile("cloud-init.yaml.tftpl", {
       ssh_key = var.ssh_key,
       ssh_key_pub = file("id_rsa.pub"),
-      mysql_host = yandex_mdb_mysql_cluster.this.host[0].fqdn,
-      pipelines_file = filebase64("pipelines.py")
+      pipelines_file = base64encode(templatefile("pipelines.py", {
+        mysql_host = yandex_mdb_mysql_cluster.this.host[0].fqdn
+      })),
+      settings_file = filebase64("settings.py")
     })
   }
 

@@ -23,4 +23,6 @@ runcmd:
   - sudo -u crawler bash -c "cd /home/crawler && git clone https://github.com/leapsky/bookspider.git && python3 -m venv venv && source venv/bin/activate && pip install scrapy mysql-connector-python"
   - sudo -u crawler bash -c 'cd /home/crawler/bookspider && echo "${pipelines_file}" > pipelines.py'
   - sudo -u crawler bash -c 'cd /home/crawler/bookspider && cat pipelines.py | base64 --decode > bookvoed/pipelines.py'
-#   - scrapy crawl bookspider
+  - sudo -u crawler bash -c 'cd /home/crawler/bookspider && echo "${settings_file}" > settings.py'
+  - sudo -u crawler bash -c 'cd /home/crawler/bookspider && cat settings.py | base64 --decode > bookvoed/settings.py'
+  - sudo -u crawler bash -c "cd /home/crawler/bookspider && source ../venv/bin/activate && scrapy crawl bookspider"
