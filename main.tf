@@ -48,9 +48,25 @@ resource "yandex_compute_instance" "this" {
 
   metadata = {
     user-data = templatefile("cloud-init.yaml.tftpl", {
-      ssh_key = var.ssh_key
+      ssh_key = var.ssh_key,
+      ssh_key_pub = file("id_rsa.pub"),
+      mysql_host = yandex_mdb_mysql_cluster.this.host[0].fqdn,
+      pipelines_file = filebase64("pipelines.py")
     })
   }
+
+  # connection {
+  #   type        = "ssh"
+  #   user        = "crawler"
+  #   private_key = file("id_rsa")
+  #   host        = self.network_interface.0.nat_ip_address
+  # }
+
+  # provisioner "file" {
+  #   source      = "pipelines.py"
+  #   destination = "/home/crawler/pipelines.py"
+  # }
+
 }
 
 # Создание Yandex Managed Service for YDB
@@ -90,3 +106,39 @@ resource "random_string" "bucket_name" {
   special = false
   upper   = false
 } 
+
+resource "yandex_mdb_mysql_cluster" "this" {
+  name        = "mycluster"
+  environment = "PRODUCTION"
+  network_id  = yandex_vpc_network.this.id
+  version     = "8.0"
+
+  resources {
+    resource_preset_id = "s2.micro"
+    disk_type_id       = "network-hdd"
+    disk_size          = 16
+  }
+
+  host {
+    zone      = var.zone
+    subnet_id = yandex_vpc_subnet.private.id
+  }
+  
+}
+
+resource "yandex_mdb_mysql_database" "this" {
+  cluster_id = yandex_mdb_mysql_cluster.this.id
+  name       = "bookspider"
+}
+
+resource "yandex_mdb_mysql_user" "crawler" {
+  cluster_id = yandex_mdb_mysql_cluster.this.id
+  name       = "crawler"
+  password   = "123456pass"
+
+  permission {
+    database_name = yandex_mdb_mysql_database.this.name
+    roles         = ["ALL"]
+  }
+}
+

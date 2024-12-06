@@ -15,6 +15,9 @@ variable "image_id" {
 } 
 
 variable "ssh_key" {
-  description = "Boot disk image id. If not provided, it defaults to Ubuntu 22.04 LTS image id"
+  type        = string
+}
+
+variable "private_key" {
   type        = string
 }
