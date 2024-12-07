@@ -1,28 +1,25 @@
 #cloud-config
 users:
-  - name: crawler
+  - name: ${user_name}
     groups: users,admin,wheel
     shell: /bin/bash
     sudo: ['ALL=(ALL) NOPASSWD:ALL']
     ssh_authorized_keys:
       - ${ssh_key}
-      - ${ssh_key_pub}
 datasource:
   Ec2:
     strict_id: false
 ssh_pwauth: no
 ssh_authorized_keys:
   - ${ssh_key}
-  - ${ssh_key_pub}
 package_update: false
 package_upgrade: false
 packages:
-  - nginx
   - python3-venv
 runcmd: 
-  - sudo -u crawler bash -c "cd /home/crawler && git clone https://github.com/leapsky/bookspider.git && python3 -m venv venv && source venv/bin/activate && pip install scrapy mysql-connector-python"
-  - sudo -u crawler bash -c 'cd /home/crawler/bookspider && echo "${pipelines_file}" > pipelines.py'
-  - sudo -u crawler bash -c 'cd /home/crawler/bookspider && cat pipelines.py | base64 --decode > bookvoed/pipelines.py'
-  - sudo -u crawler bash -c 'cd /home/crawler/bookspider && echo "${settings_file}" > settings.py'
-  - sudo -u crawler bash -c 'cd /home/crawler/bookspider && cat settings.py | base64 --decode > bookvoed/settings.py'
-  - sudo -u crawler bash -c "cd /home/crawler/bookspider && source ../venv/bin/activate && scrapy crawl bookspider"
+  - sudo -u ${user_name} bash -c "cd /home/${user_name} && git clone https://github.com/leapsky/bookspider.git && python3 -m venv venv && source venv/bin/activate && pip install scrapy mysql-connector-python"
+  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && echo "${pipelines_file}" > pipelines.py'
+  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && cat pipelines.py | base64 --decode > bookvoed/pipelines.py'
+  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && echo "${settings_file}" > settings.py'
+  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && cat settings.py | base64 --decode > bookvoed/settings.py'
+  - sudo -u ${user_name} bash -c "cd /home/${user_name}/bookspider && source ../venv/bin/activate && scrapy crawl bookspider"

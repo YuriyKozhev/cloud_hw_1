@@ -10,14 +10,40 @@ variable "zone" {
 }
 
 variable "image_id" {
-  description = "Boot disk image id. If not provided, it defaults to Ubuntu 22.04 LTS image id"
+  description = "Boot disk image id."
   type        = string
 } 
 
 variable "ssh_key" {
+  description = "Public SSH key to connect to VM"
   type        = string
 }
 
-variable "private_key" {
+variable "user_name" {
+  description = "User name to create for VM"
   type        = string
+  default     = "crawler"
+}
+
+variable "db_user_name" {
+  description = "User name to create for DB"
+  type        = string
+  default     = "crawler"
+}
+
+variable "db_user_pass" {
+  description = "User password to create for DB"
+  type        = string
+}
+
+variable "db_name" {
+  description = "DB name"
+  type        = string
+  default     = "bookspider"
+}
+
+variable "db_table_name" {
+  description = "Table name to create in DB"
+  type        = string
+  default     = "books"
 }

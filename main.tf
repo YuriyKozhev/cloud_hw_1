@@ -49,26 +49,17 @@ resource "yandex_compute_instance" "this" {
   metadata = {
     user-data = templatefile("cloud-init.yaml.tftpl", {
       ssh_key = var.ssh_key,
-      ssh_key_pub = file("id_rsa.pub"),
+      user_name = var.user_name,
       pipelines_file = base64encode(templatefile("pipelines.py", {
-        mysql_host = yandex_mdb_mysql_cluster.this.host[0].fqdn
+        mysql_host = yandex_mdb_mysql_cluster.this.host[0].fqdn,
+        db_user_name = var.db_user_name,
+        db_user_pass = var.db_user_pass,
+        db_name = var.db_name,
+        db_table_name = var.db_table_name
       })),
       settings_file = filebase64("settings.py")
     })
   }
-
-  # connection {
-  #   type        = "ssh"
-  #   user        = "crawler"
-  #   private_key = file("id_rsa")
-  #   host        = self.network_interface.0.nat_ip_address
-  # }
-
-  # provisioner "file" {
-  #   source      = "pipelines.py"
-  #   destination = "/home/crawler/pipelines.py"
-  # }
-
 }
 
 # Создание Yandex Managed Service for YDB
@@ -130,17 +121,16 @@ resource "yandex_mdb_mysql_cluster" "this" {
 
 resource "yandex_mdb_mysql_database" "this" {
   cluster_id = yandex_mdb_mysql_cluster.this.id
-  name       = "bookspider"
+  name       = var.db_name
 }
 
 resource "yandex_mdb_mysql_user" "crawler" {
   cluster_id = yandex_mdb_mysql_cluster.this.id
-  name       = "crawler"
-  password   = "123456pass"
+  name       = var.db_user_name
+  password   = var.db_user_pass
 
   permission {
     database_name = yandex_mdb_mysql_database.this.name
     roles         = ["ALL"]
   }
 }
-
