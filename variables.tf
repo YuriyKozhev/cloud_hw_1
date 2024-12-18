@@ -47,3 +47,8 @@ variable "db_table_name" {
   type        = string
   default     = "books"
 }
+
+variable "redis_pass" {
+  description = "Password for Redis"
+  type        = string
+}

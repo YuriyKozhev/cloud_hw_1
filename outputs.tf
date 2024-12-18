@@ -8,3 +8,7 @@ output "mysql_host" {
   value = yandex_mdb_mysql_cluster.this.host[0].fqdn
 }
 
+output "redis_host" {
+  description = "The Fully Qualified Domain Name for Redis"
+  value = yandex_mdb_redis_cluster.this.host[0].fqdn
+}

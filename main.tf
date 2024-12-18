@@ -57,7 +57,14 @@ resource "yandex_compute_instance" "this" {
         db_name = var.db_name,
         db_table_name = var.db_table_name
       })),
-      settings_file = filebase64("settings.py")
+      settings_file = base64encode(templatefile("settings.py", {
+        redis_host = yandex_mdb_redis_cluster.this.host[0].fqdn,
+        redis_pass = var.redis_pass,
+      })),
+      urls2queue_file = base64encode(templatefile("urls2queue.py", {
+        redis_host = yandex_mdb_redis_cluster.this.host[0].fqdn,
+        redis_pass = var.redis_pass,
+      })),
     })
   }
 }
@@ -101,7 +108,7 @@ resource "random_string" "bucket_name" {
 } 
 
 resource "yandex_mdb_mysql_cluster" "this" {
-  name        = "mycluster"
+  name        = "mysqlcluster"
   environment = "PRODUCTION"
   network_id  = yandex_vpc_network.this.id
   version     = "8.0"
@@ -132,5 +139,30 @@ resource "yandex_mdb_mysql_user" "crawler" {
   permission {
     database_name = yandex_mdb_mysql_database.this.name
     roles         = ["ALL"]
+  }
+}
+
+resource "yandex_mdb_redis_cluster" "this" {
+  name        = "rediscluster"
+  environment = "PRODUCTION"
+  network_id  = yandex_vpc_network.this.id
+
+  config {
+    password = var.redis_pass
+    version  = "7.2"
+  }
+
+  resources {
+    resource_preset_id = "hm1.nano"
+    disk_size          = 16
+  }
+
+  host {
+    zone      = var.zone
+    subnet_id = yandex_vpc_subnet.private.id
+  }
+  
+  maintenance_window {
+    type = "ANYTIME"
   }
 }

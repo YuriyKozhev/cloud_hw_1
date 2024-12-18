@@ -17,9 +17,8 @@ package_upgrade: false
 packages:
   - python3-venv
 runcmd: 
-  - sudo -u ${user_name} bash -c "cd /home/${user_name} && git clone https://github.com/leapsky/bookspider.git && python3 -m venv venv && source venv/bin/activate && pip install scrapy mysql-connector-python"
-  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && echo "${pipelines_file}" > pipelines.py'
-  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && cat pipelines.py | base64 --decode > bookvoed/pipelines.py'
-  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && echo "${settings_file}" > settings.py'
-  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && cat settings.py | base64 --decode > bookvoed/settings.py'
-  - sudo -u ${user_name} bash -c "cd /home/${user_name}/bookspider && source ../venv/bin/activate && scrapy crawl bookspider"
+  - sudo -u ${user_name} bash -c "cd /home/${user_name} && git clone https://github.com/leapsky/bookspider.git && python3 -m venv venv && source venv/bin/activate && pip install scrapy mysql-connector-python scrapy-redis"
+  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && echo "${pipelines_file}" > pipelines.py && cat pipelines.py | base64 --decode > bookvoed/pipelines.py'
+  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && echo "${settings_file}" > settings.py && cat settings.py | base64 --decode > bookvoed/settings.py'
+  - sudo -u ${user_name} bash -c 'cd /home/${user_name}/bookspider && echo "${urls2queue_file}" > urls2queue.py && cat urls2queue.py | base64 --decode > bookvoed/spiders/urls2queue.py'
+  # - sudo -u ${user_name} bash -c "cd /home/${user_name}/bookspider && source ../venv/bin/activate && scrapy crawl urls2queue && scrapy crawl bookspider"
