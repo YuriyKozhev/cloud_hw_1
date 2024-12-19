@@ -1,3 +1,21 @@
+locals {
+  pipelines_file = base64encode(templatefile("pipelines.py", {
+    mysql_host = yandex_mdb_mysql_cluster.this.host[0].fqdn,
+    db_user_name = var.db_user_name,
+    db_user_pass = var.db_user_pass,
+    db_name = var.db_name,
+    db_table_name = var.db_table_name
+  }))
+  settings_file = base64encode(templatefile("settings.py", {
+    redis_host = yandex_mdb_redis_cluster.this.host[0].fqdn,
+    redis_pass = var.redis_pass,
+  }))
+  urls2queue_file = base64encode(templatefile("urls2queue.py", {
+    redis_host = yandex_mdb_redis_cluster.this.host[0].fqdn,
+    redis_pass = var.redis_pass,
+  }))
+}
+
 # Создание VPC и подсети
 resource "yandex_vpc_network" "this" {
   name = "private"
@@ -50,21 +68,54 @@ resource "yandex_compute_instance" "this" {
     user-data = templatefile("cloud-init.yaml.tftpl", {
       ssh_key = var.ssh_key,
       user_name = var.user_name,
-      pipelines_file = base64encode(templatefile("pipelines.py", {
-        mysql_host = yandex_mdb_mysql_cluster.this.host[0].fqdn,
-        db_user_name = var.db_user_name,
-        db_user_pass = var.db_user_pass,
-        db_name = var.db_name,
-        db_table_name = var.db_table_name
-      })),
-      settings_file = base64encode(templatefile("settings.py", {
-        redis_host = yandex_mdb_redis_cluster.this.host[0].fqdn,
-        redis_pass = var.redis_pass,
-      })),
-      urls2queue_file = base64encode(templatefile("urls2queue.py", {
-        redis_host = yandex_mdb_redis_cluster.this.host[0].fqdn,
-        redis_pass = var.redis_pass,
-      })),
+      pipelines_file = local.pipelines_file,
+      settings_file = local.settings_file,
+      urls2queue_file = local.urls2queue_file,
+      scrapy_command = "scrapy crawl urls2queue"
+    })
+  }
+}
+
+# Создание воркеров
+resource "yandex_compute_disk" "worker_boot_disk" {
+  count    = var.workers_count
+
+  name     = "worker-boot-disk-${count.index}"
+  zone     = var.zone
+  image_id = var.image_id
+  size     = 15
+}
+
+resource "yandex_compute_instance" "worker_vm" {
+  count = var.workers_count
+
+  name                      = "linux-worker-${count.index}"
+  allow_stopping_for_update = true
+  platform_id               = "standard-v3"
+  zone                      = var.zone
+
+  resources {
+    cores  = "2"
+    memory = "4"
+  }
+
+  boot_disk {
+     disk_id = yandex_compute_disk.worker_boot_disk[count.index].id
+  }
+
+  network_interface {
+    subnet_id       = yandex_vpc_subnet.private.id
+    nat             = true
+  }
+
+  metadata = {
+    user-data = templatefile("cloud-init.yaml.tftpl", {
+      ssh_key = var.ssh_key,
+      user_name = var.user_name,
+      pipelines_file = local.pipelines_file,
+      settings_file = local.settings_file,
+      urls2queue_file = local.urls2queue_file,
+      scrapy_command = "scrapy crawl bookspider"
     })
   }
 }

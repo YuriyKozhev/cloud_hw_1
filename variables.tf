@@ -52,3 +52,9 @@ variable "redis_pass" {
   description = "Password for Redis"
   type        = string
 }
+
+variable "workers_count" {
+  description = "Number of workers to create"
+  type        = number
+  default     = 3
+}
